@@ -1,74 +1,49 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import AuthForm from "../components/AuthForm";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
 export default function Register() {
+  const navigate = useNavigate();
+
+  // États pour les champs du formulaire
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isRegister, setIsRegister] = useState(false); // Add this line
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("J'ai empêché le rafraichissement de la page");
-    fetch(`${API_URL}/register`, {
+  // Fonction appelée lors de la soumission du formulaire
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Empêche le rechargement de la page
+
+    // Envoi des données d'inscription au backend
+    const response = await fetch(`${API_URL}/register`, {
       method: "POST",
-      credentials: true,
-      // headers: {
-      //   "Content-Type": "application/json",
-      // },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ username, email, password }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setIsRegister(true); // Set isRegister to true after successful registration
-      })
-      .catch((e) => console.log(e));
+    });
+    if (!response.ok) {
+      console.log(response);
+    } else {
+      toast.success(response.statusText);
+      // navigate('/')
+    }
   };
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      {/* <form
-        className="w-[460px] p-5 flex flex-col gap-2 shadow-xl"
-        onSubmit={handleSubmit}
-      >
-        <h1 className="text-center font-bold text-3xl">Inscription</h1>
-        <input
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          type="text"
-          placeholder="Entrez votre nom..."
-          className="input input-primary w-full"
-        />
-        <input
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          type="email"
-          placeholder="Entrez votre mail..."
-          className="input input-primary w-full"
-        />
-        <input
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          type="password"
-          placeholder="Entrez votre Mot de Passe..."
-          className="input input-primary w-full"
-        />
-        </form> */}
+    <div className="h-screen flex justify-center items-center bg-white dark:bg-black">
       <AuthForm
-        title={"Inscription"}
+        isRegister={true}
         handleSubmit={handleSubmit}
         onChangeUsername={(e) => setUsername(e.target.value)}
         onChangeEmail={(e) => setEmail(e.target.value)}
         onChangePassword={(e) => setPassword(e.target.value)}
       />
-      <button className="btn btn-primary text-bold text-2xl">S'inscrire</button>
-      {isRegister ? (
-        <Link to={"/"}>Se Connecter</Link>
-      ) : (
-        <Link to={"/register"}>S'inscrire</Link>
-      )}
+
+      {/* Conteneur des notifications toast */}
+      <ToastContainer position="top-center" autoClose={2000} />
     </div>
   );
 }

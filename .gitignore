@@ -6,9 +6,3 @@ client/.env
 #BACKEND
 api/node_modules/
 api/.env
-
-#LOG
-*.LOG
-npm-debug.log*
-
-#

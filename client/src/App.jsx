@@ -1,30 +1,25 @@
-import { useState } from "react";
-
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
 import Task from "./pages/Task";
 import Register from "./pages/Register";
-import Login from "./pages/Login";
 import Admin from "./pages/Admin";
-import { ToastContainer } from "react-toastify";
+// import Navbar from "./components/NavBar";
 import ActivatedAccount from "./pages/ActivatedAccount";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/tasks" element={<Task />} />
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/activatedAccount" element={<ActivatedAccount />} />{" "}
-        </Routes>
-        <ToastContainer position="top-center" autoClose={3000} />
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      {/* <Navbar /> */}
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/tasks" element={<Task />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/activated-account" element={<ActivatedAccount />} />
+      </Routes>
+      <ToastContainer position="top-center" autoClose={1500} />
+    </BrowserRouter>
   );
 }
 

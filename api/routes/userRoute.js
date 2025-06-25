@@ -1,26 +1,33 @@
 const express = require("express");
-const User = require("../models/user");
+const User = require("../models/user"); // Assurez-vous que le chemin est correct
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const router = express.Router();
 const nodemailer = require("nodemailer");
 
-const router = express.Router();
-
+// Route d'inscription d'un nouvel utilisateur
 router.post("/register", async (req, res) => {
-  // const username = req.body.username;
   const { username, email, password } = req.body;
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({ message: "Bad request" });
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: "Tous les champs sont requis" });
+  }
+  // Vérifie si l'utilisateur existe déjà
+  const existinguser = await User.findOne({ email });
+  if (existinguser) {
+    return res.status(400).json({ message: "Bad request" }); // Email déjà utilisé
   }
 
+  // Hash du mot de passe avant sauvegarde
   const hash = await bcrypt.hash(password, 10);
+
+  // Création du nouvel utilisateur
   await User.create({ username, email, password: hash });
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL,
+      user: process.env.EMAIL_FROM,
       pass: process.env.EMAIL_PASS,
     },
   });
@@ -29,93 +36,108 @@ router.post("/register", async (req, res) => {
     {
       email: email,
     },
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET // Clé secrète définie dans le fichier .env
   );
 
-  const activationLink = `https://todolist-vxdl.onrender.com/validate/${token}`;
+  const activationLink = `https://todolist-s9y9.onrender.com/validate/${token}`;
   const mailOptions = {
-    from: process.env.EMAIL,
+    from: process.env.EMAIL_FROM,
     to: email,
     subject: "Active ton compte",
-    text: "Merci de t'être inscrit. Clique ici pour activer ton compte",
-    html: `<a href="${activationLink}">${activationLink}</a>`,
+    html: `<p>Bonjour ${username},</p>
+                <p>Merci de t’être inscrit. Clique ici pour activer ton compte :</p>
+                <a href="${activationLink}">${activationLink}</a>`,
   };
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("email envoyé");
-  } catch (err) {
-    console.log("Erreur d'envoi d'email", err);
-  }
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) return console.log(err);
+    console.log("email envoyé ", info);
+  });
+  // Réponse de succès
+  res
+    .status(201)
+    .json({ message: "Vérifier votre email pour valider votre compte." });
 });
 
 router.get("/validate/:token", async (req, res) => {
   try {
     const decoded = jwt.verify(req.params.token, process.env.JWT_SECRET);
     const user = await User.findOne({ email: decoded.email });
-    if (user) {
-      user.isVerified = true;
-      await user.save();
-      return res
-        .status(200)
-        .redirect(
-          "https://to-do-liste-api-client.onrender.com/activated-account"
-        );
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur introuvable" });
     }
-    res.status(404).json({ message: "Utilisateur non trouvé" });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      message: "Erreur Lien invalide ou expiré",
-    });
+
+    user.isVerified = true;
+    await user.save();
+
+    res
+      .status(200)
+      .redirect("https://todolist-front-1hz2.onrender.com/activated-account");
+  } catch {
+    res.status(400).json({ message: "Lien invalide ou expiré." });
   }
 });
+
+// Route de connexion
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
+  // Recherche de l'utilisateur par email
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({
-      message: "Identifiants invalides",
-    });
+    return res.status(404).json({ message: "Identifiants invalides" });
   }
+
+  // Vérification du mot de passe
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    return res.status(404).json({
-      message: "Identifiants invalides",
-    });
+    return res.status(404).json({ message: "Identifiants invalides" });
   }
+
   if (!user.isVerified) {
-    return res.status(403).json({
-      message: "Compte non activé",
-    });
+    return res.status(403).json({ message: "Compte non activé!" });
   }
-  const loginToken = jwt.sign(
+
+  // Génération du token JWT
+  const token = jwt.sign(
     {
       id: user._id,
       email: user.email,
       role: user.role,
       username: user.username,
     },
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET // Clé secrète définie dans le fichier .env
   );
 
-  res.cookie("token", Token, {
-    httpOnly: false,
-    secure: true,
-    sameSite: "None",
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true, // obligatoire pour sameSite: 'None'
+    sameSite: "None", // PAS 'Strict'
+    maxAge: 2 * 60 * 60 * 1000,
   });
-  res.status(200).json({ message: "Vous êtes bien connecté" });
 
+  res
+    .status(200)
+    .json({ role: user.role, username: user.username, email: user.email });
+
+  // Envoi des infos utiles au client
   // res.status(200).json({
-  //   email: user.email,
-  //   role: user.role,
-  //   token: token,
-  // });
+  //     email: user.email,
+  //     role: user.role,
+  //     username: user.username,
+  //     token: token
+  // })
 });
 
-router.get("/logout", (req, res) => {
-  res.clearCookie("token"); // Clear the cookie
-  res.status(200).json({ message: "Vous êtes déconnecté" });
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "none",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.status(200).json({ message: "Déconnecté avec succès" });
 });
-// res.cookie('token', '', {
+
 module.exports = router;

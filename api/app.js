@@ -1,36 +1,47 @@
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config();
+require("dotenv").config(); // Chargement des variables d'environnement
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const userRoute = require("./routes/userRoute");
 const taskRoute = require("./routes/taskRoute");
+const adminRoute = require("./routes/adminRoutes");
 
 const app = express();
-app.use(cookieParser()); // Pour lire les cookies
+app.use(cookieParser());
 
-//Middlewares
+// Middlewares globaux
+// app.use(cors({
+//     origin: 'http://localhost:5173',
+//     credentials: true
+// }))
+
 app.use(
   cors({
-    origin: "https://to-do-liste-api-client.onrender.com",
-    credentials: true, // Remplacez par l'URL de votre frontend
+    origin: "http://localhost:5173",
+    credentials: true,
   })
 );
-app.use(express.json()); //il permet de lire les données JSON envoyées
-app.use("", userRoute);
-app.use("", taskRoute);
 
-// app.get("/", (req, res) => {
-//   res.json({ message: "vous utilisez Express" });
-// });
-const PORT = process.env.PORT;
+app.use(express.json()); // Parse automatiquement les requêtes JSON
 
+// Utilisation des routes
+app.use("", userRoute); // Routes pour /register, /login, etc.
+app.use("", taskRoute); // Routes pour /task, /task/:id, etc.
+app.use("", adminRoute); // Routes pour /admin.
+
+// Définition du port
+const PORT = process.env.PORT || 5000;
+
+// Connexion à la base de données MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => {
-    console.log("hey Jude, you're on MongoDB");
+    console.log("Connexion réussie à MongoDB");
+    // Démarrage du serveur après connexion réussie
+    app.listen(PORT, () =>
+      console.log("Le serveur tourne sur le port " + PORT)
+    );
   })
-  .catch((e) => console.log(e));
-
-app.listen(PORT, () => console.log("Yoh, BRO, tu surfes sur " + PORT));
+  .catch((e) => console.log("Erreur de connexion à MongoDB :", e));
