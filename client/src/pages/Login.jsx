@@ -6,7 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 const [isRegister, setIsRegister] = useState(false);
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function Login() {
+export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -37,10 +37,8 @@ export default function Login() {
   };
 }
 
-export default function Login() {
-  if (localStorage.getItem("token")) {
-    return <Navigate to={"/tasks"} />;
-  }
+if (localStorage.getItem("token")) {
+  return <Navigate to={"/tasks"} />;
 }
 return (
   <div className="h-screen flex justify-center items-center">
