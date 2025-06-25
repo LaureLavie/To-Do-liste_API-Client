@@ -1,8 +1,8 @@
-import express from "express";
-import User from "../models/user.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+const express = require("express");
+const User = require("../models/user");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 

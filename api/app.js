@@ -13,7 +13,7 @@ app.use(cookieParser()); // Pour lire les cookies
 //Middlewares
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://to-do-liste-api-client.onrender.com",
     credentials: true, // Remplacez par l'URL de votre frontend
   })
 );
