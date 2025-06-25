@@ -1,0 +1,14 @@
+#FRONTEND
+client/node_modules/
+client/dist/
+client/.env
+
+#BACKEND
+api/node_modules/
+api/.env
+
+#LOG
+*.LOG
+npm-debug.log*
+
+#
