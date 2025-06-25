@@ -32,7 +32,7 @@ router.post("/register", async (req, res) => {
     process.env.JWT_SECRET
   );
 
-  const activationLink = `http://localhost:5000/validate/${token}`;
+  const activationLink = `https://todolist-vxdl.onrender.com/validate/${token}`;
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
@@ -58,7 +58,9 @@ router.get("/validate/:token", async (req, res) => {
       await user.save();
       return res
         .status(200)
-        .redirect("http://localhost:5173/activated-account");
+        .redirect(
+          "https://to-do-liste-api-client.onrender.com/activated-account"
+        );
     }
     res.status(404).json({ message: "Utilisateur non trouvé" });
   } catch (err) {
