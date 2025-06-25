@@ -1,6 +1,5 @@
 import { jwtDecode } from "jwt-decode";
 import React from "react";
-import { Navigate } from "react-router-dom";
 import { Navigate, useNavigate } from "react-router-dom";
 import { IoLogOut } from "react-icons/io5";
 import { useEffect } from "react";
