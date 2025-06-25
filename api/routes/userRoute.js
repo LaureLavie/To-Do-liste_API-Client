@@ -118,4 +118,4 @@ router.get("/logout", (req, res) => {
   res.status(200).json({ message: "Vous êtes déconnecté" });
 });
 // res.cookie('token', '', {
-export default router;
+module.exports = router;
