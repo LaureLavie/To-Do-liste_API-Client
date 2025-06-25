@@ -37,8 +37,10 @@ export default function Login() {
   };
 }
 
-if (localStorage.getItem("token")) {
-  return <Navigate to={"/tasks"} />;
+export default function Login() {
+  if (localStorage.getItem("token")) {
+    return <Navigate to={"/tasks"} />;
+  }
 }
 return (
   <div className="h-screen flex justify-center items-center">
